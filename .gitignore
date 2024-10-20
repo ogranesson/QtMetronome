@@ -1,3 +1,6 @@
+#Ignore whatever this is
+.DS_Store
+
 # Ignore build directory
 build/
 
