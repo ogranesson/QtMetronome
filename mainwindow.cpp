@@ -52,12 +52,14 @@ void MainWindow::onLoadFromFileRequested()
             QString line = stream.readLine();
             QStringList values = line.split(",");
             if (values.size() == 4) {
+                m_metronome->setBeats(values[0].toInt());
+                m_metronome->setTempo(values[1].toInt());
+                m_metronome->setVolume(values[2].toInt());
+
                 if (values[3].toInt() == 1) {
-                    m_metronome->setBeats(values[0].toInt());
-                    m_metronome->setTempo(values[1].toInt());
-                    m_metronome->setVolume(values[2].toInt());
                     m_metronome->enableTriplets();
                 }
+
                 QMessageBox::information(this, QString("Success"), QString("Settings loaded successfully!"));
                 m_stack->setCurrentWidget(m_metronome);
             }
