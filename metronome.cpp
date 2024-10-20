@@ -27,6 +27,7 @@ Metronome::Metronome(QWidget *parent)
 
     m_backButton = new QPushButton(QString("Back to presets"));
     connect(m_backButton, &QPushButton::clicked, this, &Metronome::backToPresets);
+    connect(m_backButton, &QPushButton::clicked, this, &Metronome::togglePlayStop);
 
     m_saveButton = new QPushButton(QString("Save Settings"));
     connect(m_saveButton, &QPushButton::clicked, this, &Metronome::saveSettings);
