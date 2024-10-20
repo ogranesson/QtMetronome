@@ -27,7 +27,7 @@ Metronome::Metronome(QWidget *parent)
 
     m_backButton = new QPushButton(QString("Back to presets"));
     connect(m_backButton, &QPushButton::clicked, this, &Metronome::backToPresets);
-    connect(m_backButton, &QPushButton::clicked, this, &Metronome::togglePlayStop);
+    connect(m_backButton, &QPushButton::clicked, this, &Metronome::stop);
 
     m_saveButton = new QPushButton(QString("Save Settings"));
     connect(m_saveButton, &QPushButton::clicked, this, &Metronome::saveSettings);
@@ -146,6 +146,16 @@ void Metronome::togglePlayStop()
         m_playStopButton->setText(QString("Stop"));
         m_isPlaying = true;
     }
+}
+
+void Metronome::stop()
+{
+    m_timer->stop();
+    m_beatSound->stop();
+    m_accentBeatSound->stop();
+    m_playStopButton->setText(QString("Play"));
+    m_isPlaying = false;
+    m_currentBeat = 0;
 }
 
 void Metronome::playNextBeat()

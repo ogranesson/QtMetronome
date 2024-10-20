@@ -31,6 +31,7 @@ private slots:
     void updateVolume(int value);
     void saveSettings();
     void togglePlayStop();
+    void stop();
     void playNextBeat();
     void toggleTriplets();
 
