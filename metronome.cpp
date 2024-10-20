@@ -1,7 +1,7 @@
 #include "metronome.h"
 
 Metronome::Metronome(QWidget *parent)
-    : QWidget(parent), m_beats(4), m_bufferBeats(4), m_tempo(120), m_volume(50), m_currentBeat(0), m_isPlaying(false), m_tripletsEnabled(false)
+    : QWidget(parent), m_beats(4), m_subdivisionCount(0), m_subdivisionsPerBeat(1), m_tempo(120), m_volume(50), m_currentBeat(0), m_isPlaying(false), m_tripletsEnabled(false)
 {
     m_beatsLabel = new QLabel(QString("Beats: %1").arg(m_beats));
     m_tempoLabel = new QLabel(QString("Tempo: %1 BPM").arg(m_tempo));
@@ -74,30 +74,18 @@ Metronome::Metronome(QWidget *parent)
 
 void Metronome::updateBeats(int value)
 {
-    if (m_tripletsEnabled == false) {
-        m_beats = value;
-        m_beatVisualizer->setTotalBeats(m_beats);
-        m_beatsLabel->setText(QString("Beats: %1").arg(m_beats));
-    } else {
-        m_beats = 3;
-        m_bufferBeats = value;
-        m_beatVisualizer->setTotalBeats(m_bufferBeats);
-        m_beatsLabel->setText(QString("Beats: %1").arg(m_bufferBeats));
-    }
+    m_beats = value;
+    m_beatVisualizer->setTotalBeats(m_beats);
+    m_beatsLabel->setText(QString("Beats: %1").arg(m_beats));
 }
 
 void Metronome::updateTempo(int value)
 {
-    if (m_tripletsEnabled == false) {
-        m_tempo = value;
-        m_tempoLabel->setText(QString("Tempo: %1 BPM").arg(m_tempo));
-    } else {
-        m_tempo = value * 3;
-        m_tempoLabel->setText(QString("Tempo: %1 BPM").arg(value));
-    }
+    m_tempo = value;
+    m_tempoLabel->setText(QString("Tempo: %1 BPM").arg(m_tempo));
 
     if (m_isPlaying) {
-        m_timer->setInterval(60000 / m_tempo);
+        m_timer->setInterval(60000 / (m_tempo * m_subdivisionsPerBeat));
     }
 }
 
@@ -117,11 +105,7 @@ void Metronome::saveSettings()
         if (file.open(QIODevice::WriteOnly)) {
             QTextStream stream(&file);
             stream << "Beats,Tempo,Volume,Triplets\n";
-            if (m_tripletsEnabled == true) {
-                stream << m_bufferBeats << "," << m_tempo/3 << "," << m_volume << "," << m_tripletsEnabled << "\n";
-            } else {
-                stream << m_beats << "," << m_tempo << "," << m_volume << "," << m_tripletsEnabled << "\n";
-            }
+            stream << m_beats << "," << m_tempo << "," << m_volume << "," << m_tripletsEnabled << "\n";
             file.close();
             QMessageBox::information(this, QString("Success"), QString("Settings saved successfully!"));
         } else {
@@ -139,9 +123,11 @@ void Metronome::togglePlayStop()
         m_playStopButton->setText(QString("Play"));
         m_isPlaying = false;
         m_currentBeat = 0;
+        m_subdivisionCount = 0;
     } else {
         m_currentBeat = 0;
-        m_timer->setInterval(60000 / m_tempo);
+        m_subdivisionCount = 0;
+        m_timer->setInterval(60000 / (m_tempo * m_subdivisionsPerBeat));
         m_timer->start();
         m_playStopButton->setText(QString("Stop"));
         m_isPlaying = true;
@@ -156,6 +142,7 @@ void Metronome::stop()
     m_playStopButton->setText(QString("Play"));
     m_isPlaying = false;
     m_currentBeat = 0;
+    m_subdivisionCount = 0;
 }
 
 void Metronome::playNextBeat()
@@ -163,32 +150,37 @@ void Metronome::playNextBeat()
     if (!m_isPlaying)
         return;
 
-    if (m_currentBeat == 0) {
+    // qDebug()<<"sub:"<<m_subdivisionCount<<", cur:"<<m_currentBeat;
+
+    if (m_currentBeat >= 0 && m_subdivisionCount == 0 && m_tripletsEnabled) {
         m_accentBeatSound->play();
-    } else {
+    } else if (m_currentBeat == 0 && m_subdivisionCount == 0) {
+        m_accentBeatSound->play();
+    } else if (m_currentBeat >= 0) {
         m_beatSound->play();
     }
 
-    m_beatVisualizer->setCurrentBeat(m_currentBeat);
+    if (m_subdivisionCount == 0) {
+        m_beatVisualizer->setCurrentBeat(m_currentBeat);
+    }
 
-    m_currentBeat = (m_currentBeat + 1) % m_beats;
+    m_subdivisionCount = (m_subdivisionCount + 1) % m_subdivisionsPerBeat;
+
+    if (m_subdivisionCount == 0) {
+        m_currentBeat = (m_currentBeat + 1) % m_beats;
+    }
 }
-
 
 void Metronome::toggleTriplets()
 {
     if (!m_tripletsEnabled) {
-        m_tempo = m_tempo * 3;
-        m_bufferBeats = m_beats;
-        m_beats = 3;
-        m_timer->setInterval(60000 / m_tempo);
+        m_subdivisionsPerBeat = 3;
+        m_timer->setInterval(60000 / (m_tempo * m_subdivisionsPerBeat));
         m_tripletButton->setText(QString("Triplets: On"));
         m_tripletsEnabled = true;
-    }
-    else {
-        m_tempo = m_tempo / 3;
-        m_beats = m_bufferBeats;
-        m_timer->setInterval(60000 / m_tempo);
+    } else {
+        m_subdivisionsPerBeat = 1;
+        m_timer->setInterval(60000 / (m_tempo * m_subdivisionsPerBeat));
         m_tripletButton->setText(QString("Triplets: Off"));
         m_tripletsEnabled = false;
     }
@@ -197,13 +189,6 @@ void Metronome::toggleTriplets()
 void Metronome::setBeats(int beats)
 {
     m_beatsSlider->setValue(beats);
-}
-
-void Metronome::setBufferBeats(int beats)
-{
-    m_bufferBeats = beats;
-    m_beats = 3;
-    m_beatsSlider->setValue(m_bufferBeats);
 }
 
 void Metronome::setTempo(int tempo)

@@ -16,7 +16,6 @@ class Metronome : public QWidget
 public:
     Metronome(QWidget *parent = nullptr);
     void setBeats(int beats);
-    void setBufferBeats(int beats);
     void setTempo(int tempo);
     void setVolume(int volume);
     void enableTriplets();
@@ -37,7 +36,8 @@ private slots:
 
 private:
     int m_beats;
-    int m_bufferBeats;
+    int m_subdivisionCount;
+    int m_subdivisionsPerBeat;
     int m_tempo;
     int m_volume;
     int m_currentBeat;

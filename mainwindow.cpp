@@ -57,13 +57,7 @@ void MainWindow::onLoadFromFileRequested()
                     m_metronome->setTempo(values[1].toInt());
                     m_metronome->setVolume(values[2].toInt());
                     m_metronome->enableTriplets();
-                } else {
-                    m_metronome->setBufferBeats(values[0].toInt());
-                    m_metronome->setTempo(values[1].toInt());
-                    m_metronome->setVolume(values[2].toInt());
-                    m_metronome->disableTriplets();
                 }
-
                 QMessageBox::information(this, QString("Success"), QString("Settings loaded successfully!"));
                 m_stack->setCurrentWidget(m_metronome);
             }
