@@ -1,0 +1,37 @@
+# Ignore build directory
+build/
+
+# Qt build files
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.exe
+*.a
+*.lib
+*.moc
+*.qrc
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Ignore Makefiles and generated files
+Makefile
+*.make
+*.qmake.stash
+*.qmake.cache
+
+# Ignore CMake generated files (if using CMake)
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# User-specific settings
+*.user
+*.pro.user
+*.pro.user.*
+
+# Log files
+*.log
